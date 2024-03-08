@@ -40,12 +40,6 @@ class AuthController implements HttpStatusCodes
         $username = $params['usuario'];
         $password = $params['password'];
 
-        // Generar el hash de la contraseña
-        $hash_contraseña_generado = password_hash("test", PASSWORD_DEFAULT);
-        print("HOLAAAAAAAAA");
-        // Mostrar el hash generado
-        echo "Hash generado: " . $hash_contraseña_generado;
-
         try 
         {
             $usuario = Usuario::where('usuario', $username)->first();
