@@ -58,7 +58,7 @@ class ReporteRouter {
             return $controller->induccionInforme($request, $response, $args);
         });
         
-        $app->get('/informe/{idCurso}/capacitacion/{id}', function (Request $request, Response $response, array $args) {
+        $app->get('/informe/capacitacion/{id}', function (Request $request, Response $response, array $args) {
             $controller = new ReporteController();
             return $controller->capacitacionInforme($request, $response, $args);
         });

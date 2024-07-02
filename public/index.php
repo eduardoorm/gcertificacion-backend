@@ -41,6 +41,7 @@ $container->set('directory_logos', __DIR__ . '/../uploads/logos');
 $container->set('directory_videos', __DIR__ . '/../uploads/videos');
 $container->set('directory_files', __DIR__ . '/../uploads/archivos');
 $container->set('directory_certificates', __DIR__ . '/../uploads/certificados');
+$container->set('directory_signature', __DIR__ . '/../uploads/signature');
 
 // Instantiate the app
 AppFactory::setContainer($container);

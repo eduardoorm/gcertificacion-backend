@@ -53,7 +53,7 @@ class AuthController implements HttpStatusCodes
             else if (!password_verify($password, $usuario->clave)) 
             {
                 $status = self::HTTP_BAD_REQUEST;
-                $res = MessageResponse::getInstance($status, "El usuario y contraseña no coincidennn.", []);    
+                $res = MessageResponse::getInstance($status, "El usuario y contraseña no coinciden.", []);    
             }
             else if ($usuario->activo == 0)
             {

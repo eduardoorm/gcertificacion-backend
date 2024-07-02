@@ -70,6 +70,36 @@ class UploadRouter implements HttpStatusCodes
             //return $response;
         });
 
+        //function for signature upload
+        $app->get('/signature/{name}', function (Request $request, Response $response, array $args) {
+            $directory = $this->get('directory_signature');
+            $file = $directory . DIRECTORY_SEPARATOR . $args['name'];
+            if (!file_exists($file)) {
+                $response->getBody()->write($file);
+            }
+            $image = file_get_contents($file);
+            if ($image === false) {
+                $response->getBody()->write("error getting image");
+            }
+            $response->getBody()->write($image);
+            return $response->withHeader('Content-Type', 'image/png');
+        });
+
+        $app->post('/signature', function (Request $request, Response $response) {
+            $directory = $this->get('directory_signature');
+            $uploadedFiles = $request->getUploadedFiles();
+
+            $uploadedFile = $uploadedFiles['signature'];
+            if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
+                $filename = self::moveUploadedFile($directory, $uploadedFile);
+            }
+            $res = MessageResponse::getInstance(self::HTTP_OK, self::HTTP_OK_MESSAGE, [['filename' => $filename]]); 
+            $response->withHeader('Content-Type', 'application/json')
+            ->getBody()->write(json_encode($res, JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK));
+
+            return $response->withStatus(self::HTTP_OK);
+        });
+
         $app->get('/images/logos/{name}', function (Request $request, Response $response, array $args) {
             $directory = $this->get('directory_logos');
             $file = $directory . DIRECTORY_SEPARATOR . $args['name'];
