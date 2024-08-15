@@ -270,7 +270,6 @@ class TrabajadorController implements HttpStatusCodes
         $status = self::HTTP_OK;
         try {
             $id = $request->getParsedBody()['id_trabajador'];
-            // Check if the trabajador exists
             $trabajador = Trabajador::find($id);
             if (!$trabajador) {
                 $status = self::HTTP_NOT_FOUND;
