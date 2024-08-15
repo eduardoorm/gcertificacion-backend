@@ -443,6 +443,7 @@ class ReporteController implements HttpStatusCodes
             
             $row = 13;
             foreach ($aprobados as $trabajador) {
+                $this-> insertSignature($trabajador, $row, $spreadsheet);
                 $sheet->setCellValue('B' . $row, $trabajador['nombres'] . " " . $trabajador['apellidos']);
                 $sheet->setCellValue('E' . $row, $trabajador['dni']);
                 $sheet->setCellValue('F' . $row, $trabajador['puesto'] . " / " . $trabajador['area']);
@@ -482,6 +483,25 @@ class ReporteController implements HttpStatusCodes
             ->getBody()->write(json_encode($res, JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK));
 
         return $response->withStatus($status);
+    }
+
+    public function insertSignature($trabajador, $row, $spreadsheet) {
+        if ($trabajador['signature']) {
+            $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+            $drawing->setPath($trabajador['signature']);
+            $drawing->setCoordinates('G' . $row);
+            $imageWidth = 50;
+            $imageHeight = 48;
+            $drawing->setWidthAndHeight($imageWidth, $imageHeight);
+    
+            // Centrar la imagen en la celda
+            $cellWidth = 100; // Ancho de la celda en píxeles
+            $cellHeight = 50; // Altura de la celda en píxeles
+            $drawing->setOffsetX(($cellWidth - $imageWidth) / 2);
+            $drawing->setOffsetY(($cellHeight - $imageHeight) / 2);
+    
+            $drawing->setWorksheet($spreadsheet->getActiveSheet());
+        }
     }
 
     public function capacitacionInforme(Request $request, ResponseInterface $response, array $args){
@@ -560,22 +580,7 @@ class ReporteController implements HttpStatusCodes
                 $sheet->setCellValue('B' . $row, $trabajador['nombres'] . " " . $trabajador['apellidos']);
                 $sheet->setCellValue('E' . $row, $trabajador['dni']);
                 $sheet->setCellValue('F' . $row, $trabajador['puesto'] . " / " . $trabajador['area']);
-                if($trabajador['signature']){
-                    $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
-                    $drawing->setPath($trabajador['signature']);
-                    $drawing->setCoordinates('G'.$row);
-                    $imageWidth = 50;
-                    $imageHeight = 48;
-                    $drawing->setWidthAndHeight($imageWidth, $imageHeight);
-                
-                    // Centrar la imagen en la celda
-                    $cellWidth = 100; // Ancho de la celda en píxeles
-                    $cellHeight = 50; // Altura de la celda en píxeles
-                    $drawing->setOffsetX(($cellWidth - $imageWidth) / 2);
-                    $drawing->setOffsetY(($cellHeight - $imageHeight) / 2);
-                
-                    $drawing->setWorksheet($spreadsheet->getActiveSheet()); 
-                }
+                $this-> insertSignature($trabajador, $row, $spreadsheet);
                 $row++;
             }
 
@@ -654,6 +659,7 @@ class ReporteController implements HttpStatusCodes
             
             $row = 13;
             foreach ($aceptados as $trabajador) {
+                $this-> insertSignature($trabajador, $row, $spreadsheet);
                 $sheet->setCellValue('B' . $row, $trabajador['nombres'] . " " . $trabajador['apellidos']);
                 $sheet->setCellValue('E' . $row, $trabajador['dni']);
                 $sheet->setCellValue('F' . $row, $trabajador['puesto'] . " / " . $trabajador['area']);
