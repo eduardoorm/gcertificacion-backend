@@ -557,7 +557,6 @@ class ReporteController implements HttpStatusCodes
                 }
             }
      
-            //Obtener empresa cliente
             $cliente = $trabajadores[0]->empresaCliente;
 
             $plantillaCapacitacion = __DIR__ . '/../../../templates/reports/plantilla_capacitacion.xlsx';
