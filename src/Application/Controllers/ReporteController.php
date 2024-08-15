@@ -514,7 +514,6 @@ class ReporteController implements HttpStatusCodes
 
             if (count($trabajadores) == 0) {
                 $cliente = $clase->periodo->empresaCliente;
-                //ahora muestrame esa info
                 $plantillaCapacitacion = __DIR__ . '/../../../templates/reports/plantilla_capacitacion.xlsx';
                 $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
                 $spreadsheet = $reader->load($plantillaCapacitacion);
