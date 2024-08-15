@@ -321,7 +321,7 @@ class ExamenAzarController implements HttpStatusCodes
                 'respuestas_correctas' => $respuestas_correctas, 
                 'respuestas_incorrectas' => $respuestas_incorrectas,
                 'nota' => $nota,
-                'certificado' => 'http://localhost:8080/gcertificacion/api/certificados/' . $filename . '.pdf',
+                'certificado' => 'https://backlab.gcertificacion.pe/api/certificados/' . $filename . '.pdf',
             ]);
 
             $examen_azar = $examen_azar->toArray();

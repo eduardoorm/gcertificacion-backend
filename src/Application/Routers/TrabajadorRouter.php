@@ -63,6 +63,18 @@ class TrabajadorRouter
             return $controller->store($request, $response);
         });
 
+        // Enpoint for added imagen signature to camp of table trabajador.
+        $app->post('/trabajadores/signature', function (Request $request, Response $response) {
+            $controller = new TrabajadorController();
+            return $controller->addSignature($request, $response);
+        });
+
+        // Endpoint for  get imagen signature to camp of table trabajador.
+        $app->get('/trabajadores/signature/{id}', function (Request $request, Response $response, array $args) {
+            $controller = new TrabajadorController();
+            return $controller->getSignature($request, $response, $args);
+        });
+
         // Endpoint for updating an existing trabajador.
         $app->put('/trabajadores/{id}', function (Request $request, Response $response, array $args) {
             $controller = new TrabajadorController();

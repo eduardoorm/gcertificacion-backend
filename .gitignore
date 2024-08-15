@@ -17,3 +17,9 @@ cache.properties
 # Composer
 composer.phar
 composer.lock
+# Videos
+
+uploads/videos/*.mp4
+
+#zip
+*.zip

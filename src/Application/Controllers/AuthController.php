@@ -40,12 +40,6 @@ class AuthController implements HttpStatusCodes
         $username = $params['usuario'];
         $password = $params['password'];
 
-        // Generar el hash de la contraseña
-        $hash_contraseña_generado = password_hash("test", PASSWORD_DEFAULT);
-        print("HOLAAAAAAAAA");
-        // Mostrar el hash generado
-        echo "Hash generado: " . $hash_contraseña_generado;
-
         try 
         {
             $usuario = Usuario::where('usuario', $username)->first();
@@ -59,7 +53,7 @@ class AuthController implements HttpStatusCodes
             else if (!password_verify($password, $usuario->clave)) 
             {
                 $status = self::HTTP_BAD_REQUEST;
-                $res = MessageResponse::getInstance($status, "El usuario y contraseña no coincidennn.", []);    
+                $res = MessageResponse::getInstance($status, "El usuario y contraseña no coinciden.", []);    
             }
             else if ($usuario->activo == 0)
             {

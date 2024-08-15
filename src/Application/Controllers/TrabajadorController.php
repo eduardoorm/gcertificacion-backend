@@ -158,6 +158,10 @@ class TrabajadorController implements HttpStatusCodes
         return $response->withStatus($status);
     }
 
+    /**  
+     * 
+     */
+
     /**
      * Retrieves all trabajadores matriculados and returns a JSON-encoded response.
      * 
@@ -224,6 +228,83 @@ class TrabajadorController implements HttpStatusCodes
         return $response->withStatus($status);
     }
 
+    /*  Retrieve the signature of a trabajador by ID and return it as a JSON response.
+     * 
+     * @param Request $request The HTTP request object
+     * @param ResponseInterface $response The HTTP response object
+     * @param array $args Route parameters
+     * @throws Some_Exception_Class if trabajador is not found
+     * @return ResponseInterface The HTTP response object with the JSON-encoded Trabajador object in its body and a Content-Type header of 'application/json'
+     */
+
+    public function getSignature(Request $request, ResponseInterface $response, array $args)
+    {
+        $status = self::HTTP_OK;
+        $id = $args['id'];
+        try {
+            $trabajador = Trabajador::find($id);
+
+            if (!$trabajador) {
+                $status = self::HTTP_NOT_FOUND;
+                $res = MessageResponse::getInstance($status, "Trabajador no encontrado", []);
+            } else {
+                $res = MessageResponse::getInstance($status, self::HTTP_OK_MESSAGE, $trabajador->signature);
+            }
+        } catch (QueryException $e) {
+            $status = self::HTTP_BAD_REQUEST;
+            $res = MessageResponse::getInstance($status, "Error al obtener la firma: " . $e->errorInfo[2], []);
+        }
+
+        $response->withHeader('Content-Type', 'application/json')
+            ->getBody()->write(json_encode($res, JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK));
+
+        return $response->withStatus($status); 
+    }
+
+    /**
+     * Add imagen signature to camp of table trabajador utilizando algo similar:    'certificado' => 'https://backlab.gcertificacion.pe/api/certificados/' . $filename . '.pdf',
+.
+     */
+    public function addSignature(Request $request, ResponseInterface $response)
+    {
+        $status = self::HTTP_OK;
+        try {
+            $id = $request->getParsedBody()['id_trabajador'];
+            // Check if the trabajador exists
+            $trabajador = Trabajador::find($id);
+            if (!$trabajador) {
+                $status = self::HTTP_NOT_FOUND;
+                $res = MessageResponse::getInstance($status, "Trabajador no encontrado", []);
+            } else {
+                // Get the image data from the request
+                $imageData = $request->getParsedBody()['image'];
+
+                // Decode the image data
+                $image = base64_decode($imageData);
+
+                // Generate a unique filename for the image
+                $filename = uniqid() . '.png'; // You may need to change the extension depending on the image type
+
+                // Save the image to the uploads folder
+                file_put_contents(dirname(__DIR__).'/../../uploads/signature/' . $filename, $image);
+
+                // Update the trabajador's firma field with the image path
+                $trabajador->signature = dirname(__DIR__).'/../../uploads/signature/' . $filename;
+                $trabajador->save();
+    
+                $res = MessageResponse::getInstance($status, self::HTTP_OK_MESSAGE, $trabajador);
+            }
+        } catch (QueryException $e) {
+            $status = self::HTTP_BAD_REQUEST;
+            $res = MessageResponse::getInstance($status, "Error al agregar la firma: " . $e->errorInfo[2], []);
+        }
+    
+        $response->withHeader('Content-Type', 'application/json')
+            ->getBody()->write(json_encode($res, JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK));
+    
+        return $response->withStatus($status);
+    }
+
     /**
      * Creates a new Trabajador object from the parsed body of the HTTP request and writes the 
      * JSON-encoded object to the response body. Sets the response content type to JSON.
@@ -256,6 +337,7 @@ class TrabajadorController implements HttpStatusCodes
         $response->getBody()->write(json_encode($trabajador, JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK));
         return $response->withHeader('Content-Type', 'application/json');
     }
+    
 
     /**
      * Deletes a trabajador with the given ID.
@@ -274,3 +356,4 @@ class TrabajadorController implements HttpStatusCodes
         return $response->withHeader('Content-Type', 'application/json');
     }
 }
+

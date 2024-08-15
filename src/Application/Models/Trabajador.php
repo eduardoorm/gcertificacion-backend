@@ -25,7 +25,7 @@ class Trabajador extends Model
     protected $table = 'trabajadores';
     protected $primaryKey = 'id';
     public $timestamps = false;
-    protected $fillable = ['id_empresa_cliente', 'nombres', 'apellidos', 'dni', 'area', 'puesto', 'sede', 'fecha_nacimiento'];
+    protected $fillable = ['id_empresa_cliente', 'nombres', 'apellidos', 'dni', 'area', 'puesto', 'sede', 'fecha_nacimiento','signature'];
 
     public function empresaCliente(): BelongsTo
     {

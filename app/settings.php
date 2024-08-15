@@ -35,7 +35,7 @@ return function (ContainerBuilder $containerBuilder) {
                     'collation' => 'utf8mb4_general_ci',
                     'prefix' => '',
                 ],
-                'contextApi' => '/gcertificacion/api',
+                'contextApi' => '/api',
             ]);
         }
     ]);

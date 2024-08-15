@@ -31,7 +31,12 @@ use TCPDF_FONTS;
  * @since 1.0
  */
 class ReporteController implements HttpStatusCodes
-{
+{    
+    
+    public function __construct()
+    {
+        date_default_timezone_set('America/Lima');
+    }
 
     public function induccion(Request $request, ResponseInterface $response, array $args)
     {
@@ -250,8 +255,10 @@ class ReporteController implements HttpStatusCodes
         try {
             $archivo = Archivo::find($idArchivo);
             $clase = $archivo->clase;
+            
             $clasesTrabajadores = ClaseTrabajador::where('id_clase', $clase->id)->get();
             $clasesTrabajadores->load(['trabajador.archivos']);
+        
 
             foreach($clasesTrabajadores as $claseTrabajador){
 
@@ -279,6 +286,9 @@ class ReporteController implements HttpStatusCodes
                     $totalArea[$claseTrabajador->trabajador->area] = 1;
                 }
             }
+
+            error_log("ARCHIVOOS");
+            error_log(print_r($totalArchivos, true));
 
             foreach($totalArea as $area => $cantidad){
                 if($cantidad > 0){
@@ -433,6 +443,7 @@ class ReporteController implements HttpStatusCodes
             
             $row = 13;
             foreach ($aprobados as $trabajador) {
+                $this-> insertSignature($trabajador, $row, $spreadsheet);
                 $sheet->setCellValue('B' . $row, $trabajador['nombres'] . " " . $trabajador['apellidos']);
                 $sheet->setCellValue('E' . $row, $trabajador['dni']);
                 $sheet->setCellValue('F' . $row, $trabajador['puesto'] . " / " . $trabajador['area']);
@@ -474,17 +485,70 @@ class ReporteController implements HttpStatusCodes
         return $response->withStatus($status);
     }
 
+    public function insertSignature($trabajador, $row, $spreadsheet) {
+        if ($trabajador['signature']) {
+            $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+            $drawing->setPath($trabajador['signature']);
+            $drawing->setCoordinates('G' . $row);
+            $imageWidth = 50;
+            $imageHeight = 48;
+            $drawing->setWidthAndHeight($imageWidth, $imageHeight);
+    
+            // Centrar la imagen en la celda
+            $cellWidth = 100; // Ancho de la celda en píxeles
+            $cellHeight = 50; // Altura de la celda en píxeles
+            $drawing->setOffsetX(($cellWidth - $imageWidth) / 2);
+            $drawing->setOffsetY(($cellHeight - $imageHeight) / 2);
+    
+            $drawing->setWorksheet($spreadsheet->getActiveSheet());
+        }
+    }
+
     public function capacitacionInforme(Request $request, ResponseInterface $response, array $args){
         $status = self::HTTP_OK;
         $idClase = $args['id'];
-
         try {
             $aprobados = array();
-
-            //Obtener la lista de trabajadores de la clase
             $clase = Clase::find($idClase);
-            $trabajadores = $clase->trabajadores;
-            
+            $trabajadores = $clase->trabajadores ?? array();
+
+            if (count($trabajadores) == 0) {
+                $cliente = $clase->periodo->empresaCliente;
+                $plantillaCapacitacion = __DIR__ . '/../../../templates/reports/plantilla_capacitacion.xlsx';
+                $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
+                $spreadsheet = $reader->load($plantillaCapacitacion);
+                $sheet = $spreadsheet->setActiveSheetIndex(1);
+
+                $sheet->setCellValue('F7', $clase['titulo']);
+                $sheet->setCellValue('A5', $cliente['razon_social']);
+                $sheet->setCellValue('D5', $cliente['ruc']);
+                $sheet->setCellValue('E5', $cliente['direccion']);
+                $sheet->setCellValue('H5', $cliente['numero_trabajadores']);
+                $sheet->setCellValue('F9', date('d/m/Y'));
+                
+                $row = 13;
+                foreach ($aprobados as $trabajador) {
+                    $sheet->setCellValue('B' . $row, $trabajador['nombres'] . " " . $trabajador['apellidos']);
+                    $sheet->setCellValue('E' . $row, $trabajador['dni']);
+                    $sheet->setCellValue('F' . $row, $trabajador['puesto'] . " / " . $trabajador['area']);
+                    $row++;
+                }
+
+                $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+                $basename = bin2hex(random_bytes(8));
+                $filename = sprintf('capacitacion-%s.%0.8s', $basename, 'xlsx');
+
+                $writer->save($filename);
+    
+                $fh = fopen($filename, 'rb');
+                $file_stream = new Stream($fh);
+    
+                return $response->withBody($file_stream)
+                    ->withHeader('Content-Disposition', "attachment; filename=$filename;")
+                    ->withHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                    ->withHeader('Content-Length', filesize($filename));
+            }
+
             //Obtener la lista de aprobados de la clase
             foreach($trabajadores as $trabajador){
                 $count = ExamenAzar::where('id_clase_trabajador', $trabajador->clases_trabajadores->id)->where('aprobado', 1)->count();
@@ -492,8 +556,7 @@ class ReporteController implements HttpStatusCodes
                     $aprobados[] = $trabajador;
                 }
             }
-
-            //Obtener empresa cliente
+     
             $cliente = $trabajadores[0]->empresaCliente;
 
             $plantillaCapacitacion = __DIR__ . '/../../../templates/reports/plantilla_capacitacion.xlsx';
@@ -513,6 +576,7 @@ class ReporteController implements HttpStatusCodes
                 $sheet->setCellValue('B' . $row, $trabajador['nombres'] . " " . $trabajador['apellidos']);
                 $sheet->setCellValue('E' . $row, $trabajador['dni']);
                 $sheet->setCellValue('F' . $row, $trabajador['puesto'] . " / " . $trabajador['area']);
+                $this-> insertSignature($trabajador, $row, $spreadsheet);
                 $row++;
             }
 
@@ -587,9 +651,11 @@ class ReporteController implements HttpStatusCodes
             $sheet->setCellValue('E5', $cliente['direccion']);
             $sheet->setCellValue('H5', $cliente['numero_trabajadores']);
             $sheet->setCellValue('F9', date('d/m/Y'));
+
             
             $row = 13;
             foreach ($aceptados as $trabajador) {
+                $this-> insertSignature($trabajador, $row, $spreadsheet);
                 $sheet->setCellValue('B' . $row, $trabajador['nombres'] . " " . $trabajador['apellidos']);
                 $sheet->setCellValue('E' . $row, $trabajador['dni']);
                 $sheet->setCellValue('F' . $row, $trabajador['puesto'] . " / " . $trabajador['area']);
