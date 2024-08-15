@@ -549,8 +549,6 @@ class ReporteController implements HttpStatusCodes
                     ->withHeader('Content-Length', filesize($filename));
             }
 
-    
-  
             //Obtener la lista de aprobados de la clase
             foreach($trabajadores as $trabajador){
                 $count = ExamenAzar::where('id_clase_trabajador', $trabajador->clases_trabajadores->id)->where('aprobado', 1)->count();
