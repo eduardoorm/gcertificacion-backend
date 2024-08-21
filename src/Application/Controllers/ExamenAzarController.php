@@ -120,10 +120,13 @@ class ExamenAzarController implements HttpStatusCodes
             $maximo = $ct->numero_intentos;
             $id_clase = $ct->id_clase;
             //$count = ExamenAzar::where('id_clase_trabajador', $id_clase_trabajador)->count();
-            
+            $id_empresa_cliente = $ct->trabajador->empresaCliente->id;
+ 
             $examenes_azar = ExamenAzar::where('id_clase_trabajador', $id_clase_trabajador)->orderBy('id', 'DESC')->get();
             $ultimo_examen = $examenes_azar->first();
             $count = $examenes_azar->count();
+       
+            $contadorPreguntas = 0;
 
             if (!BancoPreguntas::where('id_clase', $id_clase)->first()) {
                 $status = self::HTTP_NOT_FOUND;
@@ -134,6 +137,10 @@ class ExamenAzarController implements HttpStatusCodes
                     $preguntas_ = $ultimo_examen->load('preguntas');
                     $preguntas = array();
                     foreach ($preguntas_->preguntas as $pregunta_) {
+                        if ($id_empresa_cliente == 12 && $contadorPreguntas >= 5) {
+                            break; 
+                        }
+                        $contadorPreguntas++; 
                         $preguntas[] =  Pregunta::find($pregunta_->id_pregunta)->load('respuestas');
                         $respuestas = $preguntas[count($preguntas) - 1]['respuestas']->toArray();
                         for($i=0; $i<4; $i++){
